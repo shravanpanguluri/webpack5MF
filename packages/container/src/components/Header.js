@@ -79,7 +79,7 @@ export default function Header({ isSignedIn, onSignOut }) {
             component={RouterLink}
             to="/"
           >
-            Return 
+            Return to page
           </Typography>
           <Button
             color="primary"
