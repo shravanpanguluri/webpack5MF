@@ -28,18 +28,33 @@ export default () => {
     }
   }, [isSignedIn]);
 
+  const logMeIn = (event) => {
+    setTimeout(() => {
+      console.log(event)
+      localStorage.setItem("loggedin",true)
+      setIsSignedIn(true)
+    }, 2000);
+  }
+
+  const logMeOut = () => {
+    setTimeout(() => {
+      localStorage.removeItem("loggedin");
+      setIsSignedIn(false);
+    }, 200);
+  }
+
   return (
     <Router history={history}>
       <StylesProvider generateClassName={generateClassName}>
         <div>
           <Header
-            onSignOut={() => setIsSignedIn(false)}
+            onSignOut={() => logMeOut()}
             isSignedIn={isSignedIn}
           />
           <Suspense fallback={<Progress />}>
             <Switch>
               <Route path="/auth">
-                <AuthLazy onSignIn={() => setIsSignedIn(true)} />
+                <AuthLazy onSignIn={(event) => logMeIn(event)} />
               </Route>
               <Route path="/dashboard">
                 {!isSignedIn && <Redirect to="/" />}
