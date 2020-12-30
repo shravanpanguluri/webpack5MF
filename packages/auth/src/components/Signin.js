@@ -101,7 +101,7 @@ export default function SignIn({ onSignIn }) {
             className={classes.submit}
             onClick={onSignIn}
           >
-            Sign In
+            Sign Into
           </Button>
           <Grid container>
             <Grid item>

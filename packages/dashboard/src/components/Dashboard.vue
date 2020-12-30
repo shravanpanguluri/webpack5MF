@@ -18,7 +18,7 @@
       <div class="card summary">
         <span class="title">Revenue</span>
         <span class="detail">Income for today</span>
-        <span class="count revenue">$3,200</span>
+        <span class="count revenue">$3,700</span>
       </div>
     </div>
 
