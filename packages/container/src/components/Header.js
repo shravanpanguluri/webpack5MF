@@ -79,7 +79,7 @@ export default function Header({ isSignedIn, onSignOut }) {
             component={RouterLink}
             to="/"
           >
-            App
+            Return to home page
           </Typography>
           <Button
             color="primary"
