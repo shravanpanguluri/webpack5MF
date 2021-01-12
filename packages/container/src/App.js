@@ -1,4 +1,5 @@
 import React, { lazy, Suspense, useState, useEffect } from 'react';
+import { useOktaAuth } from '@okta/okta-react';
 import { Router, Route, Switch, Redirect } from 'react-router-dom';
 import {
   StylesProvider,
@@ -8,6 +9,7 @@ import { createBrowserHistory } from 'history';
 
 import Progress from './components/Progress';
 import Header from './components/Header';
+import OktaSignInWidget from './OktaSingInWidget';
 
 const MarketingLazy = lazy(() => import('./components/MarketingApp'));
 const AuthLazy = lazy(() => import('./components/AuthApp'));
@@ -20,7 +22,10 @@ const generateClassName = createGenerateClassName({
 const history = createBrowserHistory();
 
 export default () => {
+  const { oktaAuth } = useOktaAuth();
   const [isSignedIn, setIsSignedIn] = useState(false);
+
+  // if (authState.isPending) return null;
 
   useEffect(() => {
     if (isSignedIn) {
@@ -43,6 +48,28 @@ export default () => {
     }, 200);
   }
 
+
+  const Login = ({ config }) => {
+    const { oktaAuth, authState } = useOktaAuth();
+  
+    const onSuccess = (tokens) => {
+      oktaAuth.handleLoginRedirect(tokens);
+    };
+  
+    const onError = (err) => {
+      console.log('error logging in', err);
+    };
+  
+    if (authState.isPending) return null;
+  
+    return authState.isAuthenticated ?
+      <Redirect to={{ pathname: '/' }}/> :
+      <OktaSignInWidget
+        config={config}
+        onSuccess={onSuccess}
+        onError={onError}/>;
+  };
+
   return (
     <Router history={history}>
       <StylesProvider generateClassName={generateClassName}>
@@ -58,7 +85,8 @@ export default () => {
               </Route>
               <Route path="/dashboard">
                 {!isSignedIn && <Redirect to="/" />}
-                <DashboardLazy />
+                {/* <DashboardLazy /> */}
+                <Login />
               </Route>
               <Route path="/" component={MarketingLazy} />
             </Switch>
