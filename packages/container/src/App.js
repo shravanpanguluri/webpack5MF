@@ -1,15 +1,20 @@
 import React, { lazy, Suspense, useState, useEffect } from 'react';
-import { useOktaAuth } from '@okta/okta-react';
+// import { useOktaAuth } from '@okta/okta-react';
+import { OktaAuth } from '@okta/okta-auth-js';
 import { Router, Route, Switch, Redirect } from 'react-router-dom';
 import {
   StylesProvider,
   createGenerateClassName,
 } from '@material-ui/core/styles';
+import { Security, SecureRoute, LoginCallback } from '@okta/okta-react';
 import { createBrowserHistory } from 'history';
 
+// Fetching Okta Configuration
+import {oktaAuthConfig, oktaSignInConfig} from '../config/oktaAuthConfig';
+
 import Progress from './components/Progress';
+import Login from './Login'
 import Header from './components/Header';
-import OktaSignInWidget from './OktaSingInWidget';
 
 const MarketingLazy = lazy(() => import('./components/MarketingApp'));
 const AuthLazy = lazy(() => import('./components/AuthApp'));
@@ -19,13 +24,15 @@ const generateClassName = createGenerateClassName({
   productionPrefix: 'co',
 });
 
+import("@okta/okta-react").then(console.log)
+
 const history = createBrowserHistory();
+// Fetching the okta Configuration;
+const oktaAuth = new OktaAuth(oktaAuthConfig);
 
-export default () => {
-  const { oktaAuth } = useOktaAuth();
+export default  () => {
+  console.log("okta",OktaAuth)
   const [isSignedIn, setIsSignedIn] = useState(false);
-
-  // if (authState.isPending) return null;
 
   useEffect(() => {
     if (isSignedIn) {
@@ -48,29 +55,12 @@ export default () => {
     }, 200);
   }
 
-
-  const Login = ({ config }) => {
-    const { oktaAuth, authState } = useOktaAuth();
-  
-    const onSuccess = (tokens) => {
-      oktaAuth.handleLoginRedirect(tokens);
-    };
-  
-    const onError = (err) => {
-      console.log('error logging in', err);
-    };
-  
-    if (authState.isPending) return null;
-  
-    return authState.isAuthenticated ?
-      <Redirect to={{ pathname: '/' }}/> :
-      <OktaSignInWidget
-        config={config}
-        onSuccess={onSuccess}
-        onError={onError}/>;
+  const customAuthHandler = () => {
+    history.push('/login');
   };
 
   return (
+    <Security  oktaAuth={oktaAuth} onAuthRequired={customAuthHandler}>
     <Router history={history}>
       <StylesProvider generateClassName={generateClassName}>
         <div>
@@ -83,16 +73,19 @@ export default () => {
               <Route path="/auth">
                 <AuthLazy onSignIn={(event) => logMeIn(event)} />
               </Route>
+              <Route path='/' render={() => <Login config={oktaSignInConfig} />} /> 
               <Route path="/dashboard">
                 {!isSignedIn && <Redirect to="/" />}
-                {/* <DashboardLazy /> */}
-                <Login />
+                <DashboardLazy />
+                {/* <Login /> */}
               </Route>
-              <Route path="/" component={MarketingLazy} />
+              <SecureRoute path='/protected' component={MarketingLazy} />
             </Switch>
           </Suspense>
         </div>
       </StylesProvider>
     </Router>
+    </Security>
   );
 };
+
